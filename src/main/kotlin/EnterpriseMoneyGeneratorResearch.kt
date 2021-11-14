@@ -22,7 +22,6 @@ import kotlin.time.ExperimentalTime
 fun CoroutineScope.savePriceLogPersistent(flow: CoinResultFlow, clock: Clock = Clock.System) =
     launch(Dispatchers.IO + CoroutineName("Money generator logger")) {
         val logFile = File("pricelog.csv")
-        logFile.renameTo(File("${clock.now().epochSeconds}_pricelog.csv"))
         logFile.createNewFile()
 
         val fileOutput = FileOutputStream(logFile, true)

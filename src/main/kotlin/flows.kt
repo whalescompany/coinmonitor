@@ -7,8 +7,6 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.emitAll
 import kotlinx.coroutines.flow.flow
-import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.isActive
 import kotlin.time.Duration
 import kotlin.time.ExperimentalTime
@@ -22,14 +20,6 @@ fun <T> Flow<T>.replayState() = flow {
 fun <T> StateFlow<T>.replayState() = flow {
     emit(this@replayState.value)
     emitAll(this@replayState)
-}
-
-fun <T> Flow<T>.diff(initialPreviousValue: T): Flow<Pair<T, T>> = run {
-    @Suppress("VariableUsage")
-    var previousValue = initialPreviousValue
-    this@diff
-        .map { newValue -> previousValue to newValue }
-        .onEach { previousValue = it.first }
 }
 
 suspend inline fun <T, S> Flow<T>.collectState(

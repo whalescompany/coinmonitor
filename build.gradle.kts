@@ -16,6 +16,9 @@ application {
 
 repositories {
     mavenCentral()
+    maven {
+        url = uri("https://jitpack.io")
+    }
 }
 
 detekt {
@@ -35,6 +38,7 @@ dependencies {
     implementation("dev.kord:kord-core:0.8.0-M7")
     implementation("com.google.code.gson:gson:2.8.9")
     implementation("io.ktor:ktor-client-gson:1.6.4")
+    implementation("io.github.kotlin-telegram-bot.kotlin-telegram-bot:telegram:6.0.6")
 
     testImplementation("io.ktor:ktor-client-mock:1.6.4")
     testImplementation("org.junit.jupiter:junit-jupiter-api:5.8.1")

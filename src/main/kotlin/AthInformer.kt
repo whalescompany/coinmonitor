@@ -5,6 +5,7 @@ import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.withContext
 import java.io.File
 import kotlin.time.ExperimentalTime
@@ -21,10 +22,14 @@ data class AthUpdate(
 
 @FlowPreview
 @ExperimentalTime
-fun Flow<CoinResult.Ok>.ath(initialPreviousAth: Ath) =
+fun Flow<CoinResult.Ok>.ath(initialPreviousAth: Ath) = run {
+    @Suppress("VariableUsage")
+    var previousAth = initialPreviousAth
     this
-        .filter { it.price > initialPreviousAth.price }
+        .filter { it.price > previousAth.price }
         .map { Ath(it.price) }
+        .onEach { previousAth = it }
+}
 
 suspend fun storeAth(id: String, ath: Ath) = withContext(Dispatchers.IO) {
     val file = File("$id.ath")
