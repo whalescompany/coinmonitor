@@ -357,11 +357,6 @@ private suspend fun getMonitorableCoinsXd(
             .flattenConcat()
     },
     OfflineCoin(
-        name = "GENZIE",
-        PancakeswapCoin(id = "0x8c4c5bf2a4d327741dcbe51b41a50954213894a8")
-            .getPriceProvider(httpClient),
-    ),
-    OfflineCoin(
         name = "Dogebonk",
         PancakeswapCoin(id = "0xae2df9f730c54400934c06a17462c41c08a06ed8")
             .getPriceProvider(httpClient),
