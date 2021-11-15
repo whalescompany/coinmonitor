@@ -1,6 +1,7 @@
 package cc.makin.coinmonitor.telegram
 
 import cc.makin.coinmonitor.idofcow.IdOfCowStats
+import com.github.kotlintelegrambot.Bot
 import com.github.kotlintelegrambot.dispatcher.Dispatcher
 import com.github.kotlintelegrambot.dispatcher.command
 import com.github.kotlintelegrambot.entities.ChatId
@@ -18,3 +19,13 @@ fun Dispatcher.idOfCowStatsCommand(idOfCowStatsFlow: StateFlow<IdOfCowStats>) {
         )
     }
 }
+
+fun telegramIdOfCowInformer(telegramBot: Bot, chatIds: List<ChatId>): (Pair<IdOfCowStats, IdOfCowStats>) -> Unit =
+    { (previous, current) ->
+        val message = """
+            *ID OF COW UPDATED*: ${current.zakazeniaDzienne}
+            *previous*: ${previous.zakazeniaDzienne}
+        """.trimIndent()
+
+        chatIds.forEach { chatId -> telegramBot.sendMessage(chatId, message, parseMode = ParseMode.MARKDOWN) }
+    }
