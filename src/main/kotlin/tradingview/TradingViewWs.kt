@@ -14,7 +14,6 @@ import kotlinx.coroutines.CoroutineName
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.cancel
 import kotlinx.coroutines.channels.ClosedReceiveChannelException
 import kotlinx.coroutines.channels.ProducerScope
 import kotlinx.coroutines.delay
@@ -101,7 +100,7 @@ data class KtorTradingViewWs(
         if (this.webSocketSession.isActive && this.webSocketSession.incoming.isClosedForReceive.not()) {
             this.handle()
         } else {
-            this.close()
+            logger.info("Handler finished due to websocket inactivity.")
         }
     }
 
@@ -115,11 +114,6 @@ data class KtorTradingViewWs(
         }.onFailure { ex ->
             logger.error("Unexpected error caught while handling incomming message.", ex)
         }
-
-    private fun close() {
-        logger.info("Closing connection...")
-        this.webSocketSession.cancel()
-    }
 
     private suspend fun handleTextFrame(frame: Frame.Text) {
         val text = frame.readText()
@@ -137,7 +131,7 @@ data class KtorTradingViewWs(
         private const val URL = "wss://data.tradingview.com/socket.io/websocket"
 
         @ExperimentalTime
-        private val RECONNECT_DELAY = Duration.seconds(1)
+        private val RECONNECT_DELAY = Duration.seconds(5)
         private val CURRENCY = Currency.getInstance("USD")
 
         private val logger = LoggerFactory.getLogger(KtorTradingViewWs::class.java)
@@ -157,18 +151,19 @@ data class KtorTradingViewWs(
                         url(URL)
                         header(HttpHeaders.Origin, "https://www.tradingview.com")
                     }) {
+                        this@webSocket.send(
+                            Frame.Text("""~m~54~m~{"m":"set_auth_token","p":["unauthorized_user_token"]}"""))
+
                         val state = KtorTradingViewWs(this, this)
-                        send(state as TradingView)
-
-                        send(Frame.Text("""~m~54~m~{"m":"set_auth_token","p":["unauthorized_user_token"]}"""))
-
+                        this@start.send(state)
                         state.handle()
                     }
                 } catch (ex: Throwable) {
-                    logger.info("WebSocket unknown exception $RECONNECT_DELAY", ex)
+                    logger.info("WebSocket connection unknown exception.", ex)
                 }
 
-                logger.info("RECONNECTING ! ")
+                logger.info("Websocket session finished. " +
+                        "Trying to reconnect in ${RECONNECT_DELAY.inWholeSeconds} seconds.")
 
                 delay(RECONNECT_DELAY)
             }
