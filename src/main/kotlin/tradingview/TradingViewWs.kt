@@ -29,6 +29,7 @@ import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.takeWhile
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.withContext
+import kotlinx.coroutines.withTimeoutOrNull
 import org.slf4j.LoggerFactory
 import java.util.Currency
 import java.util.UUID
@@ -42,6 +43,7 @@ interface TradingView {
 /**
  * [TradingView] implementation using ktor as backend.
  */
+@ExperimentalTime
 @ExperimentalCoroutinesApi
 data class KtorTradingViewWs(
     val webSocketSession: ClientWebSocketSession,
@@ -88,11 +90,12 @@ data class KtorTradingViewWs(
     }
 
     tailrec suspend fun handle() {
-        val incoming = try {
-            webSocketSession.incoming.receive()
-        } catch (ex: ClosedReceiveChannelException) {
-            logger.info("WebSocket receive channel has been closed", ex)
-            null
+        val incoming = withTimeoutOrNull(Duration.seconds(30)) {
+            runCatching {
+                webSocketSession.incoming.receive()
+            }.onFailure { ex ->
+                logger.info("WebSocket receive channel has been closed", ex)
+            }.getOrNull()
         }
 
         incoming?.let { handleFrame(it) }
