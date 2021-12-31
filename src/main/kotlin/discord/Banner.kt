@@ -19,6 +19,7 @@ import dev.kord.rest.service.ChannelService
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.conflate
@@ -120,16 +121,11 @@ data class DiscordBanner(
 @FlowPreview
 @ExperimentalTime
 @ExperimentalCoroutinesApi
-suspend fun startLiveDiscordBanner(
+fun liveDiscordBanner(
     coins: Iterable<StateFlow<CoinResult>>,
     idOfCowStats: StateFlow<IdOfCowStats>,
     name: String,
-    channelId: Snowflake,
-    channelService: ChannelService,
-    logger: Logger? = LoggerFactory.getLogger("LiveDiscordBanner[$name]"),
-) {
-    var lastBanner: DiscordBanner? = null
-
+) = run {
     (coins + idOfCowStats)
         .merge()
         .sample(Duration.seconds(5))
@@ -139,15 +135,28 @@ suspend fun startLiveDiscordBanner(
         .distinctUntilChanged()
         .conflate()
         .flowOn(Dispatchers.IO)
-        .collect { bannerEmbed ->
-            withTimeoutOrNull(Duration.seconds(10)) {
-                try {
-                    lastBanner = updateBanner(lastBanner, logger, bannerEmbed, channelService, channelId)
-                } catch (th: Throwable) {
-                    logger?.error("Failed to update banner $name.", th)
-                }
+}
+
+@ExperimentalStdlibApi
+@FlowPreview
+@ExperimentalTime
+@ExperimentalCoroutinesApi
+suspend fun Flow<DiscordBannerEmbed>.render(
+    channelId: Snowflake,
+    channelService: ChannelService,
+    logger: Logger? = LoggerFactory.getLogger("LiveDiscordBannerRenderer"),
+) {
+    var lastBanner: DiscordBanner? = null
+
+    this.collect { bannerEmbed ->
+        withTimeoutOrNull(Duration.seconds(10)) {
+            try {
+                lastBanner = updateBanner(lastBanner, logger, bannerEmbed, channelService, channelId)
+            } catch (th: Throwable) {
+                logger?.error("Failed to update banner ${bannerEmbed.title}.", th)
             }
         }
+    }
 }
 
 @ExperimentalTime

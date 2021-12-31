@@ -8,7 +8,8 @@ import cc.makin.coinmonitor.PancakeswapCoin
 import cc.makin.coinmonitor.discord.discordChannelAthInformerAsync
 import cc.makin.coinmonitor.discord.discordChannelIdOfCowInformer
 import cc.makin.coinmonitor.discord.representAsStatus
-import cc.makin.coinmonitor.discord.startLiveDiscordBanner
+import cc.makin.coinmonitor.discord.liveDiscordBanner
+import cc.makin.coinmonitor.discord.render
 import cc.makin.coinmonitor.getOnline
 import cc.makin.coinmonitor.idofcow.ArcgisDataSource
 import cc.makin.coinmonitor.idofcow.IdOfCowStats
@@ -63,6 +64,11 @@ private val DISCORD_NOTIFICATIONS_CHANNELS_ID = listOf(
     Snowflake(918189727377674240), // inoshi - #gadanie
 )
 private val TELEGRAM_NOTIFICATION_CHANNELS_ID = listOf(ChatId.fromId(-1001772220530))
+
+private val DISCORD_BANNERS_CHANNELS_ID = listOf(
+    Snowflake(905195804157968454), // ahus - #shity
+    Snowflake(926396102956175391), // inoshi
+)
 
 // SPORO troszkie sie narobilo Xd
 @ExperimentalStdlibApi
@@ -164,13 +170,16 @@ private suspend fun runApp(discordToken: String, telegramToken: String) = corout
     }
 
     launch(CoroutineName("DiscordBanner")) {
-        startLiveDiscordBanner(
+        val banner = liveDiscordBanner(
             name = "ceny shituw",
-            channelId = Snowflake(905195804157968454),
-            channelService = kord.rest.channel,
             coins = dataSources.coinsFlow,
             idOfCowStats = dataSources.idOfCowStatsFlow,
         )
+        DISCORD_BANNERS_CHANNELS_ID.forEach { channelId ->
+            launch(CoroutineName("DiscordBannerRenderer #${channelId}")) {
+                banner.render(channelId, kord.rest.channel)
+            }
+        }
     }
 
     launch(CoroutineName("DiscordStatus")) {
