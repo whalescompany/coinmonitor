@@ -8,7 +8,9 @@ import io.ktor.client.features.websocket.webSocket
 import io.ktor.client.request.header
 import io.ktor.client.request.url
 import io.ktor.http.HttpHeaders
+import io.ktor.http.cio.websocket.CloseReason
 import io.ktor.http.cio.websocket.Frame
+import io.ktor.http.cio.websocket.close
 import io.ktor.http.cio.websocket.readText
 import kotlinx.coroutines.CoroutineName
 import kotlinx.coroutines.CoroutineScope
@@ -160,6 +162,7 @@ data class KtorTradingViewWs(
                         val state = KtorTradingViewWs(this, this)
                         this@start.send(state)
                         state.handle()
+                        this.close()
                     }
                 } catch (ex: Throwable) {
                     logger.info("WebSocket connection unknown exception.", ex)
