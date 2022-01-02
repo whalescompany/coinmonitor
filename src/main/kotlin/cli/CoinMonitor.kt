@@ -47,6 +47,7 @@ import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.flow.sample
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.take
 import kotlinx.coroutines.launch
@@ -175,6 +176,9 @@ private suspend fun runApp(discordToken: String, telegramToken: String) = corout
             coins = dataSources.coinsFlow,
             idOfCowStats = dataSources.idOfCowStatsFlow,
         )
+            // increase sampling time to 5 seconds * active channels count to
+            // respect discord rate limits
+            .sample(Duration.seconds(5 * DISCORD_BANNERS_CHANNELS_ID.size))
         DISCORD_BANNERS_CHANNELS_ID.forEach { channelId ->
             launch(CoroutineName("DiscordBannerRenderer #${channelId}")) {
                 banner.render(channelId, kord.rest.channel)
