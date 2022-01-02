@@ -61,7 +61,7 @@ private val logger = LoggerFactory.getLogger("CoinMonitor")
 private val DISCORD_NOTIFICATIONS_CHANNELS_ID = listOf(
     Snowflake(902208506604707840), // ahus - #shity
     Snowflake(905195804157968454), // ahus - #pisanie
-    Snowflake(918189727377674240), // inoshi - #gadanie
+    Snowflake(926396102956175391), // inoshi - #gadanie
 )
 private val TELEGRAM_NOTIFICATION_CHANNELS_ID = listOf(ChatId.fromId(-1001772220530))
 
