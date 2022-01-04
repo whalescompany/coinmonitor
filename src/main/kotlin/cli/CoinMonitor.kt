@@ -39,6 +39,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.filterIsInstance
@@ -59,15 +60,13 @@ import kotlin.time.ExperimentalTime
 private val logger = LoggerFactory.getLogger("CoinMonitor")
 
 private val DISCORD_NOTIFICATIONS_CHANNELS_ID = listOf(
-    Snowflake(902208506604707840), // ahus - #shity
-    Snowflake(905195804157968454), // ahus - #pisanie
-    Snowflake(926396102956175391), // inoshi - #gadanie
+    Snowflake(918189727377674240), // inoshi - #gadanie
+    Snowflake(926396102956175391), // inoshi - #botstamp
 )
 private val TELEGRAM_NOTIFICATION_CHANNELS_ID = listOf(ChatId.fromId(-1001772220530))
 
 private val DISCORD_BANNERS_CHANNELS_ID = listOf(
-    Snowflake(905195804157968454), // ahus - #shity
-    Snowflake(926396102956175391), // inoshi
+    Snowflake(926396102956175391), // inoshi - #botspam
 )
 
 // SPORO troszkie sie narobilo Xd
@@ -200,7 +199,7 @@ private suspend fun runApp(discordToken: String, telegramToken: String) = corout
     launch(CoroutineName("IdOfCowInformer")) {
         val informers = listOf(
             discordChannelIdOfCowInformer(kord.rest.channel, DISCORD_NOTIFICATIONS_CHANNELS_ID),
-            telegramIdOfCowInformer(telegramClient, TELEGRAM_NOTIFICATION_CHANNELS_ID)
+//            telegramIdOfCowInformer(telegramClient, TELEGRAM_NOTIFICATION_CHANNELS_ID)
         )
 
         dataSources.idOfCowStatsFlow
@@ -211,7 +210,11 @@ private suspend fun runApp(discordToken: String, telegramToken: String) = corout
                 scope = this,
             )
             .collect { diff ->
-                informers.forEach { informer -> launch { informer.invoke(diff) } }
+                informers.forEach { informer ->
+                    runCatching {
+                        informer.invoke(diff)
+                    }.onFailure { th -> logger.error("Could not notify about new id of cow stats.", th) }
+                }
             }
     }
 
