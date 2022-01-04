@@ -199,7 +199,7 @@ private suspend fun runApp(discordToken: String, telegramToken: String) = corout
     launch(CoroutineName("IdOfCowInformer")) {
         val informers = listOf(
             discordChannelIdOfCowInformer(kord.rest.channel, DISCORD_NOTIFICATIONS_CHANNELS_ID),
-//            telegramIdOfCowInformer(telegramClient, TELEGRAM_NOTIFICATION_CHANNELS_ID)
+            telegramIdOfCowInformer(telegramClient, TELEGRAM_NOTIFICATION_CHANNELS_ID)
         )
 
         dataSources.idOfCowStatsFlow
