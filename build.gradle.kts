@@ -50,3 +50,7 @@ tasks.jar {
         attributes("Main-Class" to "cc.makin.coinmonitor.cli.CoinMonitorKt")
     }
 }
+
+tasks.shadowJar {
+    archiveFileName.set("coinmonitor.jar")
+}
