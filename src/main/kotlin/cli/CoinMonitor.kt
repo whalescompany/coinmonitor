@@ -161,10 +161,6 @@ private suspend fun runApp(discordToken: String, telegramToken: String?) = corou
         null
     }
 
-    launch(CoroutineName("Save price log")) {
-        savePriceLogPersistent(dataSources.mainCoinFlow)
-    }
-
     launch(CoroutineName("DiscordBanner")) {
         val banner = liveDiscordBanner(
             name = "ceny shituw",
