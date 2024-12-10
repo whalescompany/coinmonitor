@@ -48,30 +48,22 @@ data class DiscordBannerEmbed(
 fun DiscordBannerEmbed.toMessageCreateRequest() =
     MultipartMessageCreateRequest(
         MessageCreateRequest(
-            embeds = listOf(
-                EmbedRequest(
-                    title = title.optional(),
-                    thumbnail = thumbnail.optional(),
-                    fields = fields.optional(),
-                    timestamp = lastUpdated.optional(),
-                ),
-            ).optional(),
+            embeds = listOf(this.toEmbedRequest()).optional(),
         )
     )
 
 fun DiscordBannerEmbed.toMessageModifyRequest() =
     MultipartMessagePatchRequest(
         MessageEditPatchRequest(
-            embeds = listOf(
-                EmbedRequest(
-                    title = title.optional(),
-                    thumbnail = thumbnail.optional(),
-                    fields = fields.optional(),
-                    timestamp = lastUpdated.optional(),
-                ),
-            ).optional(),
+            embeds = listOf(this.toEmbedRequest()).optional(),
         )
     )
+
+fun DiscordBannerEmbed.toEmbedRequest() = EmbedRequest(
+    thumbnail = thumbnail.optional(),
+    fields = fields.optional(),
+    timestamp = lastUpdated.optional(),
+)
 
 object DiscordBannerRenderer {
     @ExperimentalStdlibApi
