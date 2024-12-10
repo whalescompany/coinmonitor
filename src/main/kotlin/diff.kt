@@ -12,6 +12,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.File
 import kotlin.time.Duration
+import kotlin.time.Duration.Companion.seconds
 import kotlin.time.ExperimentalTime
 
 fun <T> Flow<T>.diff(initialPreviousValue: T): Flow<Pair<T, T>> = run {
@@ -47,7 +48,7 @@ suspend fun <T> Flow<T>.persistentDiff(
         .onEach { (_, newValue) ->
             previousValue = newValue
         }
-        .sample(Duration.seconds(10))
+        .sample(10.seconds)
         .onEach { (_, newValue) ->
             scope.launch(Dispatchers.IO) {
                 persistenceFile.writeText(serialize(newValue))

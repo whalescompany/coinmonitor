@@ -17,6 +17,7 @@ import org.slf4j.LoggerFactory
 import java.io.File
 import java.util.Currency
 import kotlin.time.Duration
+import kotlin.time.Duration.Companion.minutes
 import kotlin.time.ExperimentalTime
 
 private val logger = LoggerFactory.getLogger("AthInformer")
@@ -71,7 +72,7 @@ suspend fun monitorAth(
     mainCoinFlow
         .mapNotNull { it as? CoinResult.Ok }
         .ath(initialPreviousAth = initialPreviousAth)
-        .debounce(Duration.minutes(5))
+        .debounce(5.minutes)
         .diff(initialPreviousValue = initialPreviousAth)
         .map { (previous, new) -> AthUpdate(previous, new) }
         .collect { (previous, current) ->

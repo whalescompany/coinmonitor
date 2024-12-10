@@ -1,12 +1,9 @@
 package cc.makin.coinmonitor
 
 import io.ktor.client.HttpClient
-import io.ktor.client.call.receive
+import io.ktor.client.call.*
 import io.ktor.client.request.request
-import io.ktor.client.statement.HttpResponse
-import io.ktor.http.ContentType
-import io.ktor.http.Url
-import io.ktor.http.contentType
+import io.ktor.http.*
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.flow
 import java.util.Currency
@@ -21,14 +18,13 @@ data class PancakeswapCoin(
     val id: String,
 ) {
     private val url: Url
-        get() = BASE_URL.copy(encodedPath = BASE_URL.encodedPath + this.id)
+        get() = BASE_URL.clone()
+            .apply { encodedPath += id }
+            .build()
 
     suspend fun getPrice(httpClient: HttpClient): Result<Price> = runCatching {
-        httpClient
-            .request<HttpResponse>(this.url) { contentType(ContentType.Application.Json) }
-            .receive<PancakeswapCoinResponse>()
-    }
-        .map { Price(it.data.price, PancakeswapCoinResponse.Data.CURRENCY) }
+        httpClient.request(this.url) { contentType(ContentType.Application.Json) }.body<PancakeswapCoinResponse>()
+    }.map { Price(it.data.price, PancakeswapCoinResponse.Data.CURRENCY) }
 
     @ExperimentalCoroutinesApi
     fun getPriceProvider(httpClient: HttpClient): PriceProvider = {
@@ -38,7 +34,7 @@ data class PancakeswapCoin(
     }
 
     companion object {
-        private val BASE_URL: Url = Url("https://api.pancakeswap.info/api/v2/tokens/")
+        private val BASE_URL: URLBuilder = URLBuilder("https://api.pancakeswap.info/api/v2/tokens/")
     }
 }
 

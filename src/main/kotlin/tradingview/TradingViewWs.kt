@@ -1,22 +1,16 @@
 package cc.makin.coinmonitor.tradingview
 
-import cc.makin.coinmonitor.Price
 import com.google.gson.Gson
 import io.ktor.client.HttpClient
-import io.ktor.client.features.websocket.ClientWebSocketSession
-import io.ktor.client.features.websocket.webSocket
+import io.ktor.client.plugins.websocket.*
 import io.ktor.client.request.header
 import io.ktor.client.request.url
 import io.ktor.http.HttpHeaders
-import io.ktor.http.cio.websocket.CloseReason
-import io.ktor.http.cio.websocket.Frame
-import io.ktor.http.cio.websocket.close
-import io.ktor.http.cio.websocket.readText
+import io.ktor.websocket.*
 import kotlinx.coroutines.CoroutineName
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.channels.ClosedReceiveChannelException
 import kotlinx.coroutines.channels.ProducerScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
@@ -25,7 +19,6 @@ import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.filterIsInstance
 import kotlinx.coroutines.flow.launchIn
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.takeWhile
@@ -33,9 +26,8 @@ import kotlinx.coroutines.isActive
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.withTimeoutOrNull
 import org.slf4j.LoggerFactory
-import java.util.Currency
 import java.util.UUID
-import kotlin.time.Duration
+import kotlin.time.Duration.Companion.seconds
 import kotlin.time.ExperimentalTime
 
 interface TradingView {
@@ -92,7 +84,7 @@ data class KtorTradingViewWs(
     }
 
     tailrec suspend fun handle() {
-        val incoming = withTimeoutOrNull(Duration.seconds(30)) {
+        val incoming = withTimeoutOrNull(30.seconds) {
             runCatching {
                 webSocketSession.incoming.receive()
             }.onFailure { ex ->
@@ -136,8 +128,7 @@ data class KtorTradingViewWs(
         private const val URL = "wss://data.tradingview.com/socket.io/websocket"
 
         @ExperimentalTime
-        private val RECONNECT_DELAY = Duration.seconds(5)
-//        private val CURRENCY = Currency.getInstance("USD")
+        private val RECONNECT_DELAY = 5.seconds
 
         private val logger = LoggerFactory.getLogger(KtorTradingViewWs::class.java)
         private val gson = Gson()

@@ -1,10 +1,8 @@
-import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
-
 plugins {
     java
-    kotlin("jvm") version "1.5.30"
-    id("io.gitlab.arturbosch.detekt").version("1.18.0")
+    kotlin("jvm") version "2.1.0"
     application
+    id("com.github.johnrengelman.shadow").version("8.1.1")
 }
 
 group = "cc.makin"
@@ -21,24 +19,18 @@ repositories {
     }
 }
 
-detekt {
-    config = files("detekt.yml")
-}
-
 dependencies {
-    detektPlugins("pl.setblack:kure-potlin:0.5.0")
-
-    implementation("org.jetbrains.kotlin:kotlin-stdlib:1.5.30")
+    implementation("org.jetbrains.kotlin:kotlin-stdlib:2.1.0")
     implementation("io.arrow-kt:arrow-core:1.0.1")
     implementation("org.jetbrains.exposed", "exposed-core", "0.31.1")
     implementation("org.jetbrains.exposed", "exposed-dao", "0.31.1")
     implementation("org.jetbrains.exposed", "exposed-jdbc", "0.31.1")
-    implementation("org.slf4j:slf4j-api:1.7.32")
-    implementation("org.slf4j:slf4j-simple:1.7.32")
-    implementation("dev.kord:kord-core:0.8.0-M7")
+    implementation("org.slf4j:slf4j-api:2.0.16")
+    implementation("org.slf4j:slf4j-simple:2.0.16")
+    implementation("dev.kord:kord-core:0.15.0")
     implementation("com.google.code.gson:gson:2.8.9")
     implementation("io.ktor:ktor-client-gson:1.6.4")
-    implementation("io.github.kotlin-telegram-bot.kotlin-telegram-bot:telegram:6.0.6")
+    implementation("io.github.kotlin-telegram-bot.kotlin-telegram-bot:telegram:6.2.0")
 
     testImplementation("io.ktor:ktor-client-mock:1.6.4")
     testImplementation("org.junit.jupiter:junit-jupiter-api:5.8.1")
@@ -49,6 +41,12 @@ tasks.test {
     useJUnitPlatform()
 }
 
-tasks.withType<KotlinCompile> {
-    kotlinOptions.jvmTarget = "1.8"
+tasks.wrapper {
+    gradleVersion = "8.11.1"
+}
+
+tasks.jar {
+    manifest {
+        attributes("Main-Class" to "cc.makin.coinmonitor.cli.CoinMonitorKt")
+    }
 }

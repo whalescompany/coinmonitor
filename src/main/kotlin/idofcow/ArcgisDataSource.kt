@@ -3,9 +3,8 @@ package cc.makin.coinmonitor.idofcow
 import com.google.gson.JsonObject
 import com.google.gson.JsonParser
 import io.ktor.client.HttpClient
-import io.ktor.client.call.receive
 import io.ktor.client.request.request
-import io.ktor.client.statement.HttpResponse
+import io.ktor.client.statement.*
 import io.ktor.http.ContentType
 import io.ktor.http.contentType
 
@@ -14,8 +13,8 @@ data class ArcgisDataSource(
 ) {
     suspend fun getBasicIdOfCowStats() = runCatching {
         httpClient
-            .request<HttpResponse>(BASIC_STATS_URL) { contentType(ContentType.Application.Json) }
-            .receive<String>()
+            .request(BASIC_STATS_URL) { contentType(ContentType.Application.Json) }
+            .bodyAsText()
             .let { parseBasicStats(JsonParser.parseString(it).asJsonObject) }
     }
 

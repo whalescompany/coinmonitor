@@ -20,17 +20,17 @@ import dev.kord.common.entity.Snowflake
 import dev.kord.core.Kord
 import dev.kord.core.event.gateway.ReadyEvent
 import io.ktor.client.HttpClient
-import io.ktor.client.engine.cio.CIO
-import io.ktor.client.features.UserAgent
 import io.ktor.client.features.json.JsonFeature
-import io.ktor.client.features.websocket.WebSockets
+import io.ktor.client.plugins.*
+import io.ktor.client.plugins.contentnegotiation.*
+import io.ktor.client.plugins.websocket.*
+import io.ktor.serialization.kotlinx.json.*
 import kotlinx.coroutines.CoroutineName
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.coroutineScope
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.filterIsInstance
@@ -44,9 +44,8 @@ import kotlinx.coroutines.flow.take
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import org.slf4j.LoggerFactory
-import java.util.Currency
 import kotlin.system.exitProcess
-import kotlin.time.Duration
+import kotlin.time.Duration.Companion.minutes
 import kotlin.time.ExperimentalTime
 
 private val logger = LoggerFactory.getLogger("CoinMonitor")
@@ -95,7 +94,7 @@ private suspend fun createIdOfCowStatsFlow(httpClient: HttpClient, scope: Corout
                 }
             }
         }
-        .repeatable(Duration.minutes(1), scope = scope)
+        .repeatable(1.minutes, scope = scope)
         .invoke(scope)
         .mapNotNull { it.logResult().getOrNull() }
         .stateIn(scope = scope)
@@ -105,12 +104,14 @@ private suspend fun createIdOfCowStatsFlow(httpClient: HttpClient, scope: Corout
 @ExperimentalCoroutinesApi
 @ExperimentalTime
 private suspend fun createDataSources(scope: CoroutineScope): DataSources {
-    val httpClient = HttpClient(CIO) {
+    val httpClient = HttpClient() {
         install(UserAgent) {
             agent = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 " +
                     "(KHTML, like Gecko) Chrome/95.0.4638.69 Safari/537.36"
         }
-        install(JsonFeature)
+        install(ContentNegotiation) {
+            json()
+        }
         install(WebSockets)
     }
 

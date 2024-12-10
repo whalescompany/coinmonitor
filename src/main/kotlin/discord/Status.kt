@@ -21,6 +21,7 @@ import kotlinx.coroutines.withTimeout
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import kotlin.time.Duration
+import kotlin.time.Duration.Companion.seconds
 import kotlin.time.ExperimentalTime
 
 private val logger: Logger = LoggerFactory.getLogger("DiscordCoinAsStatus")
@@ -29,13 +30,13 @@ private val logger: Logger = LoggerFactory.getLogger("DiscordCoinAsStatus")
 @ExperimentalTime
 suspend fun StateFlow<CoinResult>.representAsStatus(gateway: MasterGateway) =
     this
-        .sample(Duration.seconds(15))
+        .sample(15.seconds)
         .replayState()
         .map { this.value.toUpdateStatus() }
         .flowOn(Dispatchers.IO)
         .conflate()
         .collect {
-            withTimeout(Duration.seconds(10)) {
+            withTimeout(10.seconds) {
                 runCatching {
                     gateway.sendAll(it)
                 }.onFailure { logger.error("Failed to update status!", it) }

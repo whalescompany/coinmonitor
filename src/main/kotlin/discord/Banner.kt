@@ -34,6 +34,8 @@ import kotlinx.datetime.Instant
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import kotlin.time.Duration
+import kotlin.time.Duration.Companion.minutes
+import kotlin.time.Duration.Companion.seconds
 import kotlin.time.ExperimentalTime
 
 data class DiscordBannerEmbed(
@@ -128,7 +130,7 @@ fun liveDiscordBanner(
 ) = run {
     (coins + idOfCowStats)
         .merge()
-        .sample(Duration.seconds(5))
+        .sample(5.seconds)
         .replayState()
         .map { Banner(name = name, coins.map { it.value }, idOfCowStats = idOfCowStats.value) }
         .map { DiscordBannerRenderer.render(it) }
@@ -149,7 +151,7 @@ suspend fun Flow<DiscordBannerEmbed>.render(
     var lastBanner: DiscordBanner? = null
 
     this.collect { bannerEmbed ->
-        withTimeoutOrNull(Duration.seconds(10)) {
+        withTimeoutOrNull(10.seconds) {
             try {
                 lastBanner = updateBanner(lastBanner, logger, bannerEmbed, channelService, channelId)
             } catch (th: Throwable) {
@@ -167,7 +169,7 @@ private suspend fun updateBanner(
     bannerEmbed: DiscordBannerEmbed,
     channelService: ChannelService,
     channelId: Snowflake,
-) = if (currentBanner != null && currentBanner.createdAt >= Clock.System.now().minus(Duration.minutes(30))) {
+) = if (currentBanner != null && currentBanner.createdAt >= Clock.System.now().minus(30.minutes)) {
     channelService.editMessage(channelId, currentBanner.messageId, bannerEmbed.toMessageModifyRequest())
 
     currentBanner

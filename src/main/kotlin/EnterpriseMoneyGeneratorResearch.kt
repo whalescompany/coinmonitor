@@ -14,6 +14,7 @@ import kotlinx.datetime.Clock
 import java.io.File
 import java.io.FileOutputStream
 import kotlin.time.Duration
+import kotlin.time.Duration.Companion.seconds
 import kotlin.time.ExperimentalTime
 
 @Suppress("BlockingMethodInNonBlockingContext")
@@ -34,7 +35,7 @@ fun CoroutineScope.savePriceLogPersistent(flow: CoinResultFlow, clock: Clock = C
                     .mapNotNull { it as? CoinResult.Ok }
                     .map { it.toLogCsvEntry(clock) }
                     .onEach { writer.write(it); writer.newLine() }
-                    .sample(Duration.seconds(5))
+                    .sample(5.seconds)
                     .collect { writer.flush() }
             }
         }

@@ -17,7 +17,7 @@ fun discordChannelAthInformerAsync(
     channelsIds.forEach { channelId ->
         scope.launch(CoroutineName("DiscordChannelAthInformer")) {
             channelService.createMessage(channelId) {
-                embeds += discordAthEmbed(previousAth, nextAth)
+                embeds?.add(discordAthEmbed(previousAth, nextAth))
             }
         }
     }

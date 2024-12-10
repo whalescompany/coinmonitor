@@ -4,6 +4,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import kotlin.time.Duration
+import kotlin.time.Duration.Companion.seconds
 import kotlin.time.ExperimentalTime
 
 typealias CoinResultFlow = Flow<CoinResult>
@@ -30,7 +31,7 @@ data class OfflineCoin(
 @ExperimentalTime
 fun OfflineCoin.getOnline(scope: CoroutineScope) =
     this.priceProvider
-        .repeatable(Duration.seconds(15), scope = scope)
+        .repeatable(15.seconds, scope = scope)
         .invoke(scope)
         .map { result -> toOnline(result) }
 
