@@ -39,7 +39,7 @@ import kotlin.time.Duration
 import kotlin.time.ExperimentalTime
 
 interface TradingView {
-    suspend fun getPrice(symbol: String): Flow<Result<Price>>
+    suspend fun getPrice(symbol: String): Flow<Double>
 }
 
 /**
@@ -59,7 +59,7 @@ data class KtorTradingViewWs(
             .launchIn(scope)
     }
 
-    override suspend fun getPrice(symbol: String): Flow<Result<Price>> = run {
+    override suspend fun getPrice(symbol: String): Flow<Double> = run {
         val listenerId = UUID.randomUUID().toString()
 
         sendOutgoingPacket(OutgoingPacket.Quote.CreateSession(listenerId))
@@ -70,7 +70,7 @@ data class KtorTradingViewWs(
             .filterIsInstance<IncomingPacket.Json<*>>()
             .filter { it.listenerId == listenerId }
             .mapNotNull { (it.content as? IncomingPacket.Json.Content.CoinUpdate)?.price }
-            .map { priceValue -> Result.success(Price(priceValue, CURRENCY)) }
+//            .map { priceValue  }
     }
 
     private suspend fun sendPong(pingId: Int) {
@@ -137,7 +137,7 @@ data class KtorTradingViewWs(
 
         @ExperimentalTime
         private val RECONNECT_DELAY = Duration.seconds(5)
-        private val CURRENCY = Currency.getInstance("USD")
+//        private val CURRENCY = Currency.getInstance("USD")
 
         private val logger = LoggerFactory.getLogger(KtorTradingViewWs::class.java)
         private val gson = Gson()

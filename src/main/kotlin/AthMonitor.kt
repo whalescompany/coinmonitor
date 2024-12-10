@@ -71,7 +71,7 @@ suspend fun monitorAth(
     mainCoinFlow
         .mapNotNull { it as? CoinResult.Ok }
         .ath(initialPreviousAth = initialPreviousAth)
-        .debounce(Duration.seconds(5))
+        .debounce(Duration.minutes(5))
         .diff(initialPreviousValue = initialPreviousAth)
         .map { (previous, new) -> AthUpdate(previous, new) }
         .collect { (previous, current) ->

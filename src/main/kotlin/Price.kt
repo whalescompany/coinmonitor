@@ -6,6 +6,9 @@ import java.util.Locale
 
 private val FORMAT_LOCALE: Locale = Locale.US
 
+val CURRENCY_USD = Currency.getInstance("USD")
+val CURRENCY_PLN = Currency.getInstance("PLN")
+
 data class Price(
     val value: Double,
     val currency: Currency,
